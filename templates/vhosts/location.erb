@@ -1,0 +1,20 @@
+location <%= @location %> {
+<% if @custom_lines -%>
+<% [@custom_lines].flatten.each do |line| -%>
+  <%= line %>
+<% end -%>
+<% else -%>
+  proxy_set_header        Host $http_host;
+  proxy_set_header        X-Real-IP $remote_addr;
+  proxy_set_header        X-Scheme $scheme;
+  proxy_connect_timeout   90;
+  proxy_send_timeout      90;
+  proxy_read_timeout      90;
+  proxy_buffer_size       4k;
+  proxy_buffers           4 32k;
+  proxy_busy_buffers_size 64k;
+  proxy_pass              http://<%= @upstream %>;
+  proxy_pass_header       Server;
+  proxy_redirect          off;
+<% end -%>
+}

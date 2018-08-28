@@ -1,0 +1,43 @@
+location <%= @location %> {
+  access_log                        <%= @log_file %> <%= @log_format %>;
+  more_clear_headers                'Last-Modified';
+  more_set_headers                  'P3P:policyref=\"/w3c/p3p.xml\", CP=\"CUR ADM OUR NOR STA NID\"'; 
+  more_set_headers                  'Cache-Control:no-store,no-cache';
+  more_set_headers                  'Pragma:no-cache';
+  more_set_headers                  'Expires: 0';
+<% if @hypers_base -%>
+  hypers                            <%= @hypers %>;
+  hypers_jsonp                      <%= @hypers_jsonp %>;
+  hypers_cookie                     <%= @hypers_cookie %>;
+<% end -%>
+<% if @session_code -%>
+  hypers_session_code               <%= @session_code %>;
+  hypers_cookie_session_code        <%= @session_code %>;
+<% end -%>
+
+<% if @mobile and @buffer_size -%>
+  client_body_buffer_size           <%= @buffer_size %>;
+  set_form_input                    $data;
+<% end -%>
+<% if @hypers_extra -%>
+<% if @jsonp_add_value -%>
+  hypers_jsonp_add_value_P_rate_den 100;
+  hypers_jsonp_add_value_P_rate_num 100;
+  hypers_jsonp_add_value_U_rate_den 100;
+  hypers_jsonp_add_value_U_rate_num 50;
+  hypers_jsonp_add_value_hashcode   hy;
+  hypers_jsonp_add_value            " ";
+<% end -%>
+  hypers_cookie_domain              "<%= @hypers_cookie_domain %>";    
+<% end -%>
+<% if @rewrite_uri -%>
+  hypers_rewrite_uri                <%= @rewrite_uri -%>;
+  hypers_rewrite_cookies            <%= @rewrite_uri -%>;
+  hypers_rewrite_session            <%= @rewrite_uri -%>;
+<% end -%>
+<% if @custom_lines -%>
+<% [@custom_lines].flatten.each do |line| -%>
+  <%= line %>
+<% end -%>
+<% end -%>
+}

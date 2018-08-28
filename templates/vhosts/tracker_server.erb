@@ -1,0 +1,29 @@
+server {
+  listen              <%= @port %>;
+  charset             <%= @charset %>;
+  server_name         <%= @server_name %>; 
+  hypers_z_rewrite    <%= @hypers_z_rewrite %>;
+<% if @ssl_pem -%>
+  ssl on;
+  ssl_certificate     <%= @ssl_dir %>/<%= @ssl_pem %>;
+  ssl_certificate_key <%= @ssl_dir %>/<%= @ssl_pem %>;
+<% end -%>
+  log_not_found       <%= @log_not_found %>;
+  limit_conn          <%= @limit_cone %>;
+  limit_req           <%= @limit_req %>;
+  gzip                on;
+  gzip_vary           on;
+  gzip_static         on;
+  gzip_proxied        any;
+  gzip_min_length     1000;
+  gzip_types          <%= @gzip_types %>;
+<% if @root[0] and @static_server -%>
+  root                <%= @root[0] %>;
+<% end -%>
+<% if @custom_lines -%>
+<% [@custom_lines].flatten.each do |line| -%>
+  <%= line %>
+<% end -%>
+<% end -%>
+  include             <%= @location_dir %>/*.conf;
+}

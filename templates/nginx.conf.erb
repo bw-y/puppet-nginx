@@ -1,0 +1,59 @@
+user                 <%= @work_user %>;
+worker_processes     <%= @processorcount %>;
+worker_rlimit_nofile <%= @worker_rlimit_nofile %>;
+
+pid                   <%= @pid_file %>;
+error_log             <%= @err_log %>;
+
+events {
+  use epoll;
+  worker_connections <%= @worker_connections %>;
+  multi_accept on;
+}
+
+http {
+  include       mime.types;
+  default_type  <%= @default_type %>;
+
+  gzip_types    <%= @gzip_types %>;
+  gzip          on;
+
+  sendfile      on;
+  tcp_nopush    on;
+  tcp_nodelay   on;
+  send_timeout  10;
+  server_tokens	off;
+
+  more_clear_headers        'Server';
+
+  keepalive_timeout         0;
+  client_body_timeout       10;
+  client_header_timeout     10;
+  reset_timedout_connection on;
+
+  server_names_hash_max_size    128;
+  server_names_hash_bucket_size 256;
+
+  open_file_cache_valid     30s;
+  open_file_cache_errors    on;
+  open_file_cache_min_uses  2;
+  open_file_cache	max=100000 inactive=20s;
+
+  limit_conn_zone	$binary_remote_addr zone=iwt_zone1:500m;
+  limit_req_zone	$binary_remote_addr zone=iwt_zone2:500m rate=100r/s;
+
+  #定义iwt log格式
+  log_format iwt '$msec	$remote_addr	$sent_http_set_cookie	$http_referer	$query_string	$http_Cookie	$http_user_agent	$http_x_forwarded_for';
+  # log_format mirs '$msec	$remote_addr	$sent_http_set_cookie	$http_referer	$args	$http_Cookie	$document_uri	$http_user_agent	$request_body';
+  log_format mirs '$msec	$remote_addr	$sent_http_set_cookie	$http_referer	$query_string	$http_Cookie	$document_uri	$http_user_agent	$request_body	$http_x_forwarded_for';
+  # iwt log
+  log_format guru '$msec	$remote_addr	$sent_http_set_cookie	$query_string	$http_referer	$uri	$http_user_agent	$http_x_forwarded_for';
+  log_format webgame '$msec	$remote_addr	$sent_http_set_cookie	$query_string	$http_referer	$uri	$http_user_agent	$http_x_forwarded_for';
+  log_format edmtracker '$msec	$remote_addr	$http_user_agent	$sent_http_set_cookie	$uri	$query_string	$http_x_forwarded_for';
+  log_format adstrack2 '$msec	$remote_addr	$sent_http_set_cookie	$http_referer	$query_string	$http_Cookie	$uri	$http_user_agent	$http_x_forwarded_for';
+  # for irt21,irt22,irt23
+  log_format hwt '$msec	$remote_addr	$sent_http_set_cookie	$http_referer	$query_string	$http_Cookie	$document_uri	$http_user_agent	$request_body	$http_x_forwarded_for';
+  log_format hat '$msec	$remote_addr	$sent_http_set_cookie	$http_referer	$query_string	$http_Cookie	$uri	$http_user_agent	$http_x_forwarded_for';
+
+  include	<%= @vhost_dir %>/*.conf;
+}

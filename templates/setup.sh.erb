@@ -1,0 +1,42 @@
+#!/bin/bash
+
+err_log=<%= @err_log %>
+down_dir=<%= @down_dir %>
+tar_name=<%= @nginx_tar_gz %>
+install_dir=$down_dir/<%= @nginx_un_tar_gz %>
+nginx_tar=$down_dir/$tar_name
+sed_file=$install_dir/objs/Makefile
+conf_path=<%= @conf_dir %>/nginx.conf
+
+openssl_dir=$down_dir/<%= @openssl_un_tar_gz %>
+openssl_tar_gz=<%= @openssl_tar_gz %>
+
+[ -d $install_dir ] && rm -rf $install_dir
+[ -d $openssl_dir ] && rm -rf $openssl_dir
+cd $down_dir
+tar xf $tar_name
+tar xf $openssl_tar_gz 
+cfe_bin=$install_dir/configure
+[ ! -x $cfe_bin ] && chmod +x $cfe_bin
+cd $install_dir && $cfe_bin --conf-path=$conf_path --with-openssl=$openssl_dir --with-http_stub_status_module --add-module=ngx_http_header_more --add-module=ngx_devel_kit --add-module=ngx_http_hypers_cookie_filter --add-module=form-input-nginx-module --add-module=ngx_http_hypers --with-http_ssl_module --with-http_gzip_static_module --with-http_spdy_module --with-http_gunzip_module --with-http_random_index_module --with-http_secure_link_module --with-http_stub_status_module --with-http_auth_request_module --with-mail --with-mail_ssl_module --with-file-aio --add-module=lua --add-module=nginx-upload-progress-module-master 
+
+if [[ $? -eq 0 ]];then
+  sed -i 's/-Werror//g' $sed_file
+  make -j <%= @processorcount.to_i * 2 %>
+  if [[ $? -eq 0 ]];then
+    make install
+    if [[ $? -eq 0 ]];then
+      [ -e /usr/sbin/nginx ] || ln -s /usr/local/nginx/sbin/nginx /usr/sbin/
+      rm -rf $install_dir $openssl_dir
+    else
+      echo "$(/bin/date "+%Y-%m-%d/%H:%M:%S %z %Z %s"): nginx setup ->> make install <<- fail" >> $err_log   
+      exit 1
+    fi 
+  else
+    echo "$(/bin/date "+%Y-%m-%d/%H:%M:%S %z %Z %s"): nginx setup ->> make <<- fail" >> $err_log   
+    exit 1
+  fi
+else
+  echo "$(/bin/date "+%Y-%m-%d/%H:%M:%S %z %Z %s"): nginx setup ->> configure <<- fail" >> $err_log 
+  exit 1
+fi

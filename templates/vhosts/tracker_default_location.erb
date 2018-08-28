@@ -1,0 +1,80 @@
+access_log <%= @log_file %> <%= @log_format %>;
+
+<% if @default_root -%>
+location / {
+  index      index.html index.htm;
+  root       html;
+  access_log off;
+}
+
+location ~* \.xml$ {
+  root       <%= @root[0] %>;
+  expires    <%= @expires_xml %>;
+  access_log off;
+}
+<% end -%>
+
+<% if @mobile_cfg -%>
+location /cfg/ {
+  root       <%= @root[0] %>;
+  access_log off;
+  index  index.html index.htm;
+}
+<% end -%>
+
+<% if @static_server -%>
+location ~* \.swf$ {
+  root       <%= @root[0] %>;
+  expires    <%= @expires_swf %>;
+}
+
+location ~* \.js$ {
+  root       <%= @root[0] %>;
+  expires    <%= @expires_js %>;
+}
+<% end -%>
+
+<% if @set_cookie_iwt -%>
+location ^~ /_iwt.html {
+  alias      <%= @root[0] %>/_iwt.html;
+  access_log off;
+}
+<% end -%>
+<% if @nielsen_tracker -%>
+location ~* \.html$ {
+  root      <%= @root[0] %>;
+  expires   15d;
+}
+
+location  ~^/static {
+  root <%= @root[0] %>/dmp_static/ ;
+}
+
+location /q {
+  root <%= @root[0] %>;
+  expires 30d;
+  access_log   off;
+}
+<% end -%>
+
+location = /_iwt.gif {
+  empty_gif;
+}
+
+location ^~ /favicon.ico {
+  log_not_found off;
+  expires    99d;
+  break;
+}
+
+location /nginx_status {
+  allow         all;
+  access_log    off;
+  stub_status   on;
+  log_not_found off;
+}
+
+error_page 500 502 503 504 /50x.html;
+location = /50x.html {
+  root       html;
+}
